@@ -10,6 +10,14 @@ set -x
 # we need to do it ourselves.
 git clean -dfx
 
+# check trailing whitespace:
+if !  egrep " $" -nr --include=\*.{cpp,h,inc}  --exclude-dir=*{teuchos,/build/}* $SOURCE_DIR ; then
+    echo No trailing whitespace;
+else
+    exit -1;
+fi
+# TODO: Add similar grep checks for space after comma,, space after `if`, space between `)` and `{` also
+
 if [[ "${CC}" == "" ]]; then
     export CC=gcc
     export CXX=g++
