@@ -10,6 +10,14 @@ set -x
 # we need to do it ourselves.
 git clean -dfx
 
+# check trailing whitespace:
+if !  egrep " $" -nr --include=\*.{cpp,h,inc}  --exclude-dir=*{teuchos,/build/}* $SOURCE_DIR ; then
+    echo No trailing whitespace;
+else
+    exit -1;
+fi
+# TODO: Add similar grep checks for space after comma,, space after `if`, space between `)` and `{` also
+
 if [[ "${TEST_IN_TREE}" != "yes" ]]; then
     mkdir build
     cd build
@@ -84,14 +92,6 @@ make install
 if [[ "${TEST_CPP}" == "no" ]]; then
     exit 0;
 fi
-
-# check trailing whitespace:
-if !  egrep " $" -nr --include=\*.{cpp,h,inc}  --exclude-dir=*{teuchos,/build/}* $SOURCE_DIR ; then
-    echo No trailing whitespace;
-else
-    exit -1;
-fi
-# TODO: Add similar grep checks for space after comma,, space after `if`, space between `)` and `{` also
 
 echo "Running tests in build directory:"
 # C++
