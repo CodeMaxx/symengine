@@ -43,8 +43,7 @@ RCP<const Infinit> Infinit::from_int(const int val)
 //! Canonical when the direction is -1, 0 or 1.
 bool Infinit::is_canonical(const RCP<const Number> &num) const
 {
-    if (is_a<Complex>(*num) || is_a<ComplexDouble>(*num))
-        throw std::runtime_error("Not implemented for all directions");
+    SYMENGINE_ASSERT(not (is_a<Complex>(*num) || is_a<ComplexDouble>(*num)))
 
     if (num->is_one() || num->is_zero() || num->is_minus_one())
         return true;
@@ -123,22 +122,32 @@ RCP<const Number> Infinit::mul(const Number &other) const
     if (is_a<Infinit>(other)) {
         const Infinit &s = static_cast<const Infinit &>(other);
 
-        return make_rcp<const Infinit>(this->_direction->mul(*(s._direction)));
+        return infinit(this->_direction->mul(*(s._direction)));
     } else {
         if (other.is_positive())
             return rcp_from_this_cast<Number>();
         else if (other.is_negative())
-            return make_rcp<const Infinit>(this->_direction->mul(*minus_one));
+            return infinit(this->_direction->mul(*minus_one));
         else
             throw std::runtime_error(
                 "Indeterminate Expression: `0 * Infinity` encountered");
     }
 }
 
-// TODO
 RCP<const Number> Infinit::div(const Number &other) const
 {
-    return zero;
+    if(is_a<Infinit>(other)) {
+    	throw std::runtime_error("Indeterminate Expression: "
+                                     "`infinity / infinity` "
+                                     "encountered");
+    } else {
+    	if (other.is_positive())
+    		return rcp_from_this_cast<Number>();
+    	else if (other.is_zero())
+    		return infinit(0);
+    	else
+    		return infinit(this->_direction->mul(*minus_one));
+    }
 }
 // TODO
 RCP<const Number> Infinit::pow(const Number &other) const

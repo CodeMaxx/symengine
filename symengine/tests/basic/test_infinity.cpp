@@ -6,13 +6,13 @@
 #include <symengine/infinity.h>
 #include <symengine/symengine_rcp.h>
 #include <symengine/constants.h>
+#include <symengine/add.h>
 
 using SymEngine::Basic;
 using SymEngine::Number;
 using SymEngine::is_a;
 using SymEngine::Integer;
 using SymEngine::integer;
-using SymEngine::Rational;
 using SymEngine::rational;
 using SymEngine::one;
 using SymEngine::zero;
@@ -20,14 +20,14 @@ using SymEngine::minus_one;
 using SymEngine::RCP;
 using SymEngine::Infinit;
 using SymEngine::infinit;
-using SymEngine::rcp_dynamic_cast;
 using SymEngine::Complex;
 using SymEngine::Inf;
 using SymEngine::NegInf;
 using SymEngine::ComplexInf;
 using SymEngine::Symbol;
 using SymEngine::symbol;
-using SymEngine::Complex;
+using SymEngine::Add;
+using SymEngine::add;
 
 TEST_CASE("Constructors for Infinity", "[Infinity]")
 {
@@ -65,9 +65,6 @@ TEST_CASE("Constructors for Infinity", "[Infinity]")
     //! Checking copy constructor
     Infinit inf2 = Infinit(*NegInf);
     REQUIRE(inf2.__str__() == "-oo");
-
-    RCP<const Number> cx = Complex::from_two_nums(*integer(1), *integer(1));
-    CHECK_THROWS_AS(Infinit::from_direction(cx), std::runtime_error);
 }
 
 TEST_CASE("Hash Size for Infinity", "[Infinity]")
@@ -160,6 +157,7 @@ TEST_CASE("Adding to Infinity", "[Infinity]")
     REQUIRE(n1->__str__() == "-oo");
     n1 = c->add(*minus_one);
     REQUIRE(n1->__str__() == "zoo");
+
     CHECK_THROWS_AS(c->add(*c), std::runtime_error);
     CHECK_THROWS_AS(c->add(*a), std::runtime_error);
     CHECK_THROWS_AS(b->add(*a), std::runtime_error);
@@ -200,4 +198,28 @@ TEST_CASE("Multiplication with Infinity", "[Infinity]")
 
     RCP<const Number> cx = Complex::from_two_nums(*integer(1), *integer(1));
     CHECK_THROWS_AS(c->mul(*cx), std::runtime_error);
+}
+
+TEST_CASE("Division of Infinity", "[Infinity]")
+{
+    RCP<const Infinit> a = Inf;
+    RCP<const Infinit> b = NegInf;
+    RCP<const Infinit> c = ComplexInf;
+
+    RCP<const Number> n1 = b->div(*integer(-10));
+    REQUIRE(n1->__str__() == "+oo");
+    n1 = b->div(*integer(10));
+    REQUIRE(n1->__str__() == "-oo");
+    n1 = c->div(*minus_one);
+    REQUIRE(n1->__str__() == "zoo");
+    n1 = a->div(*zero);
+    REQUIRE(n1->__str__() == "zoo");
+    n1 = b->div(*zero);
+    REQUIRE(n1->__str__() == "zoo");
+    n1 = c->div(*zero);
+    REQUIRE(n1->__str__() == "zoo");
+
+    CHECK_THROWS_AS(a->div(*b), std::runtime_error);
+    CHECK_THROWS_AS(b->div(*c), std::runtime_error);
+    CHECK_THROWS_AS(c->div(*c), std::runtime_error);
 }
